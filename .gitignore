@@ -1,3 +1,5 @@
 myenv
 
 build_push_webhook.sh
+
+.vscode

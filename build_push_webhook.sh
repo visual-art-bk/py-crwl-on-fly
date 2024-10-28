@@ -11,7 +11,7 @@ git push -u origin main
 
 if [ $? -eq 0 ]; then
     # 성공 메시지
-    echo  "\033git-push-success\033[0m" 
+    echo  "\033[32mgit-push-success\033[0m" 
     curl -X POST -H 'Content-type: application/json' --data '{"text":"git-push-success"}' $SLACK_WEBHOOK_URL
 else
     # 실패 메시지
@@ -19,15 +19,13 @@ else
     curl -X POST -H 'Content-type: application/json' --data '{"text":"git-push-fail"}' $SLACK_WEBHOOK_URL
 fi
 
-# /home/kbk/.fly/bin/flyctl deploy
+/home/kbk/.fly/bin/flyctl deploy
 
-# # 빌드 및 푸시가 성공적으로 완료되었는지 확인
-# if [ $? -eq 0 ]; then
-#     # 성공 메시지
-#     echo "웹훅-Fly 배치 성공"
-#     curl -X POST -H 'Content-type: application/json' --data '{"text":"웹훅-Fly 배치 성공"}' $SLACK_WEBHOOK_URL
-# else
-#     # 실패 메시지
-#     echo "웹훅-Fly 배치 실패"
-#     curl -X POST -H 'Content-type: application/json' --data '{"text":"웹훅-Fly 배치 실패"}' $SLACK_WEBHOOK_URL
-# fi
+# 빌드 및 푸시가 성공적으로 완료되었는지 확인
+if [ $? -eq 0 ]; then
+    # 성공 메시지
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"웹훅-Fly 배치 성공"}' $SLACK_WEBHOOK_URL
+else
+    # 실패 메시지
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"웹훅-Fly 배치 실패"}' $SLACK_WEBHOOK_URL
+fi

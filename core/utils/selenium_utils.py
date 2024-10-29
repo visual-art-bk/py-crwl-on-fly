@@ -1,14 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import os
+from config import GOOGLE_CHROME_DRIVER_PATH
 
-GOOGLE_CHROME_DRIVER_PATH = os.getenv(
-    "GOOGLE_CHROME_DRIVER_PATH",
-    "./static/drivers/chromedriver/chromedriver"  # 기본 경로 (로컬 환경용)
-)
-
-# GOOGLE_CHROME_DRIVER_PATH = "/app/static/drivers/chromedriver/chromedriver"
 
 
 class CrawlingWebDriver:

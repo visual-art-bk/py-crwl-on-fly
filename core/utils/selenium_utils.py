@@ -1,9 +1,15 @@
+import time
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from config import GOOGLE_CHROME_DRIVER_PATH
+from config import GOOGLE_CHROME_DRIVER_PATH, SELENIUM_HEADLESS
 import os
 import signal
+from core.exceptions.route_exceptions import RouteHandlerError
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 
 class CrawlingWebDriver:
     def __init__(self):
@@ -17,7 +23,7 @@ class CrawlingWebDriver:
         # --headless 옵션이 필요합니다.
         # --headless 옵션 없이 Chrome을 실행하면 디스플레이가 없는 환경에서는 Chrome이 제대로 실행되지 않아 오류가 발생할 수 있습니다.
         # 화면 표시 없이 실행 (서버 환경에서 필수)
-        options.add_argument("--headless")
+        # options.add_argument("--headless")
         #
         #
         #
@@ -46,7 +52,7 @@ class CrawlingWebDriver:
             print("driver.quit() 호출됨: ChromeDriver가 종료되었습니다.")
         else:
             print("driver.quit() 호출 실패: ChromeDriver가 여전히 실행 중입니다.")
-            
+
             # 프로세스 ID를 가져와 강제 종료 시도
             try:
                 pid = self.driver.service.process.pid
@@ -54,3 +60,42 @@ class CrawlingWebDriver:
                 print("프로세스 강제 종료됨: ChromeDriver가 종료되었습니다.")
             except Exception as e:
                 print("프로세스 강제 종료 실패:", e)
+
+
+class WebScarper:
+    _driver = None
+    _wait = None
+
+    @classmethod
+    def init(self, driver):
+
+        try:
+            self._driver = driver
+            self._wait = WebDriverWait(self._driver, 3)
+
+        except Exception as e:
+            raise RouteHandlerError(e)
+
+    @classmethod
+    def wait_loading(self):
+        try:
+            self._wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        except Exception as e:
+            print(e)
+            print("요소를 찾는 데 실패했습니다.")
+
+    @classmethod
+    def open_browser(self, url):
+        try:
+            self._driver.get(url)
+            self._driver.maximize_window()
+            self.wait_loading()
+
+        except Exception as e:
+            raise RouteHandlerError(e)
+    
+    @classmethod
+    def close_browser(self, delay=0):
+        time.sleep(delay)
+        self._driver.quit()
+

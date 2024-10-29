@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from config import GOOGLE_CHROME_DRIVER_PATH
+import os
+import signal
 
 class CrawlingWebDriver:
     def __init__(self):
@@ -34,11 +36,21 @@ class CrawlingWebDriver:
         # with 블록 시작 시 driver 객체 반환
         return self.driver
 
+    # TODO [f342] 여기 에러처리가 안되고 있음 해결해야 합니다.
     def __exit__(self, exc_type, exc_val, exc_tb):
         # with 블록 종료 시 자동으로 driver.quit() 호출
         self.driver.quit()
-        
+
+        # ChromeDriver 프로세스 상태 확인 및 강제 종료
         if self.driver.service.process is None:
             print("driver.quit() 호출됨: ChromeDriver가 종료되었습니다.")
         else:
             print("driver.quit() 호출 실패: ChromeDriver가 여전히 실행 중입니다.")
+            
+            # 프로세스 ID를 가져와 강제 종료 시도
+            try:
+                pid = self.driver.service.process.pid
+                os.kill(pid, signal.SIGTERM)
+                print("프로세스 강제 종료됨: ChromeDriver가 종료되었습니다.")
+            except Exception as e:
+                print("프로세스 강제 종료 실패:", e)

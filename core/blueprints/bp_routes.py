@@ -1,7 +1,5 @@
-from flask import Blueprint, render_template_string
-import traceback
+from flask import Blueprint
 from core.utils.selenium_utils import CrawlingWebDriver
-from selenium.common.exceptions import WebDriverException
 from core.route_handlers.home import home_handler
 from core.route_handlers.scr_nv_blog import NvBlogScraper, render_tmp_html
 from core.exceptions.route_exceptions import RouteHandlerError

@@ -1,9 +1,11 @@
+from datetime import datetime
 import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from config import GOOGLE_CHROME_DRIVER_PATH, SELENIUM_HEADLESS
+from config import GOOGLE_CHROME_DRIVER_PATH
+import config
 import os
 import signal
 from core.exceptions.route_exceptions import RouteHandlerError
@@ -23,7 +25,8 @@ class CrawlingWebDriver:
         # --headless 옵션이 필요합니다.
         # --headless 옵션 없이 Chrome을 실행하면 디스플레이가 없는 환경에서는 Chrome이 제대로 실행되지 않아 오류가 발생할 수 있습니다.
         # 화면 표시 없이 실행 (서버 환경에서 필수)
-        # options.add_argument("--headless")
+        if config.HEADLESS:
+            options.add_argument("--headless")
         #
         #
         #
@@ -93,9 +96,15 @@ class WebScarper:
 
         except Exception as e:
             raise RouteHandlerError(e)
-    
+
     @classmethod
     def close_browser(self, delay=0):
         time.sleep(delay)
         self._driver.quit()
 
+    @classmethod
+    def render_test_html(self):
+        now = datetime.now()
+        formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        return f"<h1>스크랩 성공 - 현재: {formatted_now}</h1>"

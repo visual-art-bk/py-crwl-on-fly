@@ -24,6 +24,6 @@ def _():
             nv_blg_scrper.open_browser("https://www.naver.com")
             nv_blg_scrper.close_browser(delay=0)
 
-            return render_tmp_html()
+            return nv_blg_scrper.render_test_html()
     except Exception as e:
         RouteHandlerError(e)

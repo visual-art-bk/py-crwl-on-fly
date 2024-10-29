@@ -22,13 +22,14 @@ WORKDIR /app
 # 환경 변수 설정
 # 이곳은 서버를 위한 변수설정이며, 로컬을 위한 설정은 .env에서 정의
 ENV GOOGLE_CHROME_DRIVER_PATH=/app/static/drivers/chromedriver/chromedriver
+ENV HEADLESS=True
 
 # Python 패키지 설치
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# 애플리케이션 코드 복사
-COPY . .
+# 애플리케이션 소스 복사
+COPY . . 
 
 # 앱 실행
 CMD ["python", "app.py"]

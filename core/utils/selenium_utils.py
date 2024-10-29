@@ -3,10 +3,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from config import GOOGLE_CHROME_DRIVER_PATH
 
-
-
 class CrawlingWebDriver:
     def __init__(self):
+        # See .env, config.py and Dockerfile.
         service = Service(GOOGLE_CHROME_DRIVER_PATH)
 
         options = Options()

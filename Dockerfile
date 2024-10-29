@@ -20,6 +20,7 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 WORKDIR /app
 
 # 환경 변수 설정
+# 이곳은 서버를 위한 변수설정이며, 로컬을 위한 설정은 .env에서 정의
 ENV GOOGLE_CHROME_DRIVER_PATH=/app/static/drivers/chromedriver/chromedriver
 
 # Python 패키지 설치

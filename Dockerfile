@@ -19,6 +19,9 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# 환경 변수 설정
+ENV GOOGLE_CHROME_DRIVER_PATH=/app/static/drivers/chromedriver/chromedriver
+
 # Python 패키지 설치
 COPY requirements.txt .
 RUN pip install -r requirements.txt

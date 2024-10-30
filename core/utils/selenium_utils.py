@@ -1,6 +1,7 @@
 import traceback
 from datetime import datetime
 import time
+import psutil
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
@@ -16,9 +17,11 @@ from selenium.webdriver.common.by import By
 
 
 class CrawlingWebDriver:
+    _service: Service = None
+
     def __init__(self):
         # See .env, config.py and Dockerfile.
-        service = Service(GOOGLE_CHROME_DRIVER_PATH)
+        self._service = Service(GOOGLE_CHROME_DRIVER_PATH)
 
         options = Options()
 
@@ -40,43 +43,92 @@ class CrawlingWebDriver:
         options.add_argument("--remote-debugging-port=9222")  # 원격 디버깅 포트 설정
         options.add_argument("--window-size=1920,1080")  # 기본 창 크기 설정
 
+        ### 최근에 추가된 옵션
+        options.add_argument("--blink-settings=imagesEnabled=false")  # 이미지 비활성화
+
+        # eager: DOM 콘텐츠가 로드되면 바로 작업을 시작하며, 이미지나 광고 등은 나중에 로드
+        options.page_load_strategy = "eager"
+
+        # 속도가 빨라짐에 기여하는 듯함 데스트해봐야함
+        options.add_argument(
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+        )
+
         # ChromeDriver 설정 및 생성
-        self.driver = webdriver.Chrome(service=service, options=options)
+        self.driver = webdriver.Chrome(service=self._service, options=options)
+
+        # # 이미지 파일 비활성화 설정
+        # self.driver.execute_cdp_cmd("Network.setBlockedURLs", {"urls": ["*.css"]})
+
+        # 이미지, 광고, 외부 스크립트 차단
+        self.driver.execute_cdp_cmd(
+            "Network.setBlockedURLs",
+            {
+                "urls": [
+                    "*googlesyndication.com/*",  # Google 광고
+                    "*doubleclick.net/*",  # DoubleClick 광고
+                    "*adservice.google.com/*",  # Google 광고 서비스
+                    "*.jpg",
+                    "*.jpeg",
+                    "*.png",  # 이미지 파일
+                    "*.gif",
+                    "*.svg",  # 이미지 파일
+                    "*.css",  # CSS 파일
+                    "*.woff",
+                    "*.woff2",  # 웹 폰트
+                    "*.js",  # 외부 스크립트
+                ]
+            },
+        )
+        # 불필요한 요소 제거 (예: 광고 배너, 동적 콘텐츠 등)
+        self.driver.execute_script(
+            """
+            var ads = document.querySelectorAll('.ad, .banner, .popup');
+            ads.forEach(ad => ad.remove());
+        """
+        )
 
     def __enter__(self):
         # with 블록 시작 시 driver 객체 반환
+        # 세션 ID 출력
+        print("Driver session ID:", self.driver.session_id)
         return self.driver
 
-    # TODO [f342] 여기 에러처리가 안되고 있음 해결해야 합니다.
     def __exit__(self, exc_type, exc_val, exc_tb):
         # with 블록 종료 시 자동으로 driver.quit() 호출
         self.driver.quit()
 
-        # ChromeDriver 프로세스 상태 확인 및 강제 종료
-        if self.driver.service.process is None:
-            print("driver.quit() 호출됨: ChromeDriver가 종료되었습니다.")
-        else:
-            print("driver.quit() 호출 실패: ChromeDriver가 여전히 실행 중입니다.")
-
-            # 프로세스 ID를 가져와 강제 종료 시도
+        # 서비스 종료 및 자식 프로세스 강제 종료
+        if self._service.process:
             try:
-                pid = self.driver.service.process.pid
-                os.kill(pid, signal.SIGTERM)
-                print("프로세스 강제 종료됨: ChromeDriver가 종료되었습니다.")
+                # 부모 프로세스 (ChromeDriver) PID 가져오기
+                parent_pid = self._service.process.pid
+                parent = psutil.Process(parent_pid)
+
+                # 자식 프로세스 순회 및 종료
+                for child in parent.children(recursive=True):
+                    child.kill()  # 자식 프로세스 강제 종료
+                parent.kill()  # 부모 프로세스 종료
+            except psutil.NoSuchProcess:
+                print("프로세스가 이미 종료되었습니다.")
             except Exception as e:
-                print("프로세스 강제 종료 실패:", e)
+                print(f"프로세스 종료 중 오류 발생: {e}")
 
 
 class WebScarper:
-    _driver = None
-    _wait = None
+    _driver: webdriver.Chrome = None
+    _wait_under_1sec = None
+    _wait_under_3sec = None
+    _wait_under_5sec = None
 
     @classmethod
     def init(self, driver):
 
         try:
             self._driver = driver
-            self._wait = WebDriverWait(self._driver, 5)
+            self._wait_under_1sec = WebDriverWait(self._driver, 0.5)
+            self._wait_under_3sec = WebDriverWait(self._driver, 2.5)
+            self._wait_under_5sec = WebDriverWait(self._driver, 4)
 
         except Exception as e:
             raise RouteHandlerError(e)
@@ -99,19 +151,10 @@ class WebScarper:
         try:
             self._driver.get(url)
             self._driver.maximize_window()
-            self.wait_loading(delay=3)
+            self.wait_loading(delay=0.5)
 
         except Exception as e:
             raise RouteHandlerError(e)
-
-    @classmethod
-    def close_browser(self, delay=0):
-
-        time.sleep(delay)
-
-        print("현재 드라이브를 닫습니다.")
-
-        self._driver.quit()
 
     @classmethod
     def search_keyword(self, keyword, css_selector_input):
@@ -119,17 +162,13 @@ class WebScarper:
         self._keyword = keyword
 
         try:
-            wait = self._create_wait(self, delay=3)
-            search_box = wait.until(
+            search_box = self._wait_under_3sec.until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, css_selector_input))
             )
-
             search_box.send_keys(self._keyword)
             search_box.submit()
 
         except (TimeoutException, NoSuchElementException):
-
-            self.close_browser()
 
             print("시간 초과: 요소를 찾지 못했습니다.")
 

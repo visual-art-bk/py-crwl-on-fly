@@ -1,5 +1,5 @@
 from flask import Flask, Blueprint, render_template_string
-from core.exceptions.route_exceptions import RouteHandlerError, route_error_handler
+from core.exceptions.route_exceptions import RouteHandlerError, route_error_handler, NoSuchElementError
 
 app = Flask(__name__)
 

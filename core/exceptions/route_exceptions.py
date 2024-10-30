@@ -1,5 +1,6 @@
 import traceback
 from flask import render_template_string
+from selenium.common.exceptions import NoSuchElementException
 
 
 class RouteHandlerError(Exception):
@@ -25,3 +26,11 @@ def route_error_handler(error):
         error=error, err_msg=err_msg
     )
     return render_template_string(html_content), 500
+
+
+class NoSuchElementError(NoSuchElementException):
+    def __init__(
+        self, message="XPATH, CSS Selector에 일치하는 HTML 엘리멘트를 찾을 수 없습니다."
+    ):
+        print("NoSuchElementException: 요소를 찾지 못했습니다.")
+        super().__init__(message)

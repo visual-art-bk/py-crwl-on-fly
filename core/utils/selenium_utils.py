@@ -1,14 +1,16 @@
+import traceback
 from datetime import datetime
 import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from config import GOOGLE_CHROME_DRIVER_PATH
 import config
 import os
 import signal
-from core.exceptions.route_exceptions import RouteHandlerError
+from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementError
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
@@ -74,37 +76,73 @@ class WebScarper:
 
         try:
             self._driver = driver
-            self._wait = WebDriverWait(self._driver, 3)
+            self._wait = WebDriverWait(self._driver, 5)
 
         except Exception as e:
             raise RouteHandlerError(e)
 
     @classmethod
-    def wait_loading(self):
+    def wait_loading(self, delay: int = 0):
+
         try:
-            self._wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            wait = self._create_wait(self, delay)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
         except Exception as e:
             print(e)
+
             print("요소를 찾는 데 실패했습니다.")
 
     @classmethod
     def open_browser(self, url):
+
         try:
             self._driver.get(url)
             self._driver.maximize_window()
-            self.wait_loading()
+            self.wait_loading(delay=3)
 
         except Exception as e:
             raise RouteHandlerError(e)
 
     @classmethod
     def close_browser(self, delay=0):
+
         time.sleep(delay)
+
+        print("현재 드라이브를 닫습니다.")
+
         self._driver.quit()
 
     @classmethod
+    def search_keyword(self, keyword, css_selector_input):
+
+        self._keyword = keyword
+
+        try:
+            wait = self._create_wait(self, delay=3)
+            search_box = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, css_selector_input))
+            )
+
+            search_box.send_keys(self._keyword)
+            search_box.submit()
+
+        except (TimeoutException, NoSuchElementException):
+
+            self.close_browser()
+
+            print("시간 초과: 요소를 찾지 못했습니다.")
+
+            raise NoSuchElementError()
+
+    @classmethod
     def render_test_html(self):
+
         now = datetime.now()
+
         formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
 
         return f"<h1>스크랩 성공 - 현재: {formatted_now}</h1>"
+
+    def _create_wait(self, delay: int = 5):
+        return WebDriverWait(self._driver, delay)

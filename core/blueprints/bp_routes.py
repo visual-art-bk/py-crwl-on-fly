@@ -22,8 +22,9 @@ def _():
             nv_blg_scrper = NvBlogScraper()
             nv_blg_scrper.init(driver)
             nv_blg_scrper.open_browser("https://www.naver.com")
+            nv_blg_scrper.search_keyword('강아지 사료', "input[name='query']")
             nv_blg_scrper.close_browser(delay=0)
 
             return nv_blg_scrper.render_test_html()
     except Exception as e:
-        RouteHandlerError(e)
+        raise RouteHandlerError(e)

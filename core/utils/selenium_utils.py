@@ -13,14 +13,18 @@ from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementErr
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+MAX_REQUEST = 10
+
 
 class CrawlingWebDriver:
-    _driver: webdriver.Chrome = None
-    _service: Service = None
+    driver: webdriver.Chrome = None
+    _service: Service = (None,)
+    _options: Options = None
+    _request_count = 0
 
     @classmethod
     def _init_serive_options(self, options: Options):
-        
+
         # See ./.env
         if config.HEADLESS:
             options.add_argument("--headless")
@@ -49,9 +53,11 @@ class CrawlingWebDriver:
         return options
 
     @classmethod
-    def _init_driver_execute_cdp_dmd(self, global_driver: webdriver.Chrome):
+    def _init_driver(self, service: Service, options: Options):
+        self.driver = webdriver.Chrome(service=service, options=options)
+
         # 이미지, 광고, 외부 스크립트 차단
-        global_driver.execute_cdp_cmd(
+        self.driver.execute_cdp_cmd(
             "Network.setBlockedURLs",
             {
                 "urls": [
@@ -71,7 +77,7 @@ class CrawlingWebDriver:
             },
         )
         # 불필요한 요소 제거 (예: 광고 배너, 동적 콘텐츠 등)
-        global_driver.execute_script(
+        self.driver.execute_script(
             """
             var ads = document.querySelectorAll('.ad, .banner, .popup');
             ads.forEach(ad => ad.remove());
@@ -79,40 +85,38 @@ class CrawlingWebDriver:
         )
 
     def __init__(self):
-        global driver
 
         # See .env, config.py and Dockerfile.
         self._service = Service(GOOGLE_CHROME_DRIVER_PATH)
-        
-        options = Options()
-        self._init_serive_options(options)
+        self._options = Options()
 
-        driver = webdriver.Chrome(service=self._service, options=options)
-        self._init_driver_execute_cdp_dmd(driver)
-        
-        self._driver = driver
+        self._init_serive_options(options=self._options)
+
+        self._init_driver(service=self._service, options=self._options)
 
     def __enter__(self):
-        return self._driver
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._driver.quit()
+        self._request_count += 1
+        print(f"현재 {self._request_count}번 요청되었습니다.")
+        self.driver.quit()
 
-        # 서비스 종료 및 자식 프로세스 강제 종료
-        if self._service.process:
-            try:
-                # 부모 프로세스 (ChromeDriver) PID 가져오기
-                parent_pid = self._service.process.pid
-                parent = psutil.Process(parent_pid)
+    @classmethod
+    def inspect_request_count(self):
+        if self._request_count > MAX_REQUEST:
+            print(
+                f"드라이브 초기화 됩니다 -  총 {self._request_count} // Max {MAX_REQUEST}"
+            )
+            self.driver.quit()
 
-                # 자식 프로세스 순회 및 종료
-                for child in parent.children(recursive=True):
-                    child.kill()
-                parent.kill()
-            except psutil.NoSuchProcess:
-                print("프로세스가 이미 종료되었습니다.")
-            except Exception as e:
-                print(f"프로세스 종료 중 오류 발생: {e}")
+            self.__init__(self)
+
+            self._request_count = 0  # 카운트 초기화
+
+    @classmethod
+    def count_request(self):
+        self._request_count += 1
 
 
 class WebScarper:

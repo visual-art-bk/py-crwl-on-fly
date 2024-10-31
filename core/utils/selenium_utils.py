@@ -15,14 +15,13 @@ from selenium.webdriver.common.by import By
 
 
 class CrawlingWebDriver:
+    _driver: webdriver.Chrome = None
     _service: Service = None
 
-    def __init__(self):
-        # See .env, config.py and Dockerfile.
-        self._service = Service(GOOGLE_CHROME_DRIVER_PATH)
-
+    @classmethod
+    def _init_serive_options(self):
         options = Options()
-
+        
         # Fly.io와 같은 서버 환경에서 Selenium을 사용하는 경우,
         # 실제 디스플레이가 없는 상태에서 Chrome을 실행하게 되므로,
         # --headless 옵션이 필요합니다.
@@ -52,14 +51,24 @@ class CrawlingWebDriver:
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
         )
 
+        return options
+
+    def __init__(self):
+        # See .env, config.py and Dockerfile.
+        self._service = Service(GOOGLE_CHROME_DRIVER_PATH)
+
+        options = self._init_serive_options()
+
         # ChromeDriver 설정 및 생성
-        self.driver = webdriver.Chrome(service=self._service, options=options)
+        global driver
+        driver = webdriver.Chrome(service=self._service, options=options)
+        self._driver = driver
 
         # # 이미지 파일 비활성화 설정
-        # self.driver.execute_cdp_cmd("Network.setBlockedURLs", {"urls": ["*.css"]})
+        # self._driver.execute_cdp_cmd("Network.setBlockedURLs", {"urls": ["*.css"]})
 
         # 이미지, 광고, 외부 스크립트 차단
-        self.driver.execute_cdp_cmd(
+        self._driver.execute_cdp_cmd(
             "Network.setBlockedURLs",
             {
                 "urls": [
@@ -79,7 +88,7 @@ class CrawlingWebDriver:
             },
         )
         # 불필요한 요소 제거 (예: 광고 배너, 동적 콘텐츠 등)
-        self.driver.execute_script(
+        self._driver.execute_script(
             """
             var ads = document.querySelectorAll('.ad, .banner, .popup');
             ads.forEach(ad => ad.remove());
@@ -87,14 +96,14 @@ class CrawlingWebDriver:
         )
 
     def __enter__(self):
-        # with 블록 시작 시 driver 객체 반환
+        # with 블록 시작 시 _driver 객체 반환
         # 세션 ID 출력
-        print("Driver session ID:", self.driver.session_id)
-        return self.driver
+        print("Driver session ID:", self._driver.session_id)
+        return self._driver
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # with 블록 종료 시 자동으로 driver.quit() 호출
-        self.driver.quit()
+        # with 블록 종료 시 자동으로 _driver.quit() 호출
+        self._driver.quit()
 
         # 서비스 종료 및 자식 프로세스 강제 종료
         if self._service.process:

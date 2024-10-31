@@ -21,12 +21,7 @@ class CrawlingWebDriver:
     @classmethod
     def _init_serive_options(self, options: Options):
         
-
-        # Fly.io와 같은 서버 환경에서 Selenium을 사용하는 경우,
-        # 실제 디스플레이가 없는 상태에서 Chrome을 실행하게 되므로,
-        # --headless 옵션이 필요합니다.
-        # --headless 옵션 없이 Chrome을 실행하면 디스플레이가 없는 환경에서는 Chrome이 제대로 실행되지 않아 오류가 발생할 수 있습니다.
-        # 화면 표시 없이 실행 (서버 환경에서 필수)
+        # See ./.env
         if config.HEADLESS:
             options.add_argument("--headless")
         #

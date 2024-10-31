@@ -9,8 +9,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from config import GOOGLE_CHROME_DRIVER_PATH
 import config
-import os
-import signal
 from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementError
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By

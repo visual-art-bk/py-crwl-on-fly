@@ -26,6 +26,8 @@ ENV HEADLESS=True
 
 # Python 패키지 설치
 COPY requirements.txt .
+
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # 애플리케이션 소스 복사

@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 
 MAX_REQUEST = 10
 
-class WebScrpManager:
+class WebScrpDriverManager:
     driver: webdriver.Chrome = None
     _service: Service = (None,)
     _options: Options = None

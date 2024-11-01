@@ -1,5 +1,5 @@
 from flask import Blueprint
-from core.utils.WebScrpManager import WebScrpManager
+from core.utils.WebScrpDriverManager import WebScrpDriverManager
 from core.route_handlers.home import home_handler
 from core.route_handlers.scr_nv_blog import NvBlogScraper, render_tmp_html
 from core.exceptions.route_exceptions import RouteHandlerError
@@ -16,7 +16,7 @@ def home():
 def _():
     try:
         # with문이 종료되면 driver.quit() 실행되므로, 추가 콜 필요없음
-        with WebScrpManager() as manager:
+        with WebScrpDriverManager() as manager:
             manager.inspect_request_count()
             
             nv_blg_scrper = NvBlogScraper()

@@ -100,6 +100,10 @@ class WebScrpDriverManager:
         self._request_count += 1
         print(f"현재 {self._request_count}번 요청되었습니다.")
         self.driver.quit()
+    
+    @classmethod
+    def count_request(self):
+        self._request_count += 1
 
     @classmethod
     def inspect_request_count(self):
@@ -112,8 +116,4 @@ class WebScrpDriverManager:
             self.__init__(self)
 
             self._request_count = 0  # 카운트 초기화
-
-    @classmethod
-    def count_request(self):
-        self._request_count += 1
 

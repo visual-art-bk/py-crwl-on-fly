@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 from datetime import datetime
 import time
@@ -12,8 +13,10 @@ import config
 from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementError
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from core.utils.testers import timer_tester
 
 MAX_REQUEST = 10
+
 
 class WebScrpDriverManager:
     driver: webdriver.Chrome = None
@@ -26,11 +29,9 @@ class WebScrpDriverManager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._count_request()
 
-       
-        
         self.inspect_request_count()
+
         self.driver.quit()
 
     @classmethod
@@ -111,18 +112,16 @@ class WebScrpDriverManager:
             )
 
     @classmethod
-    def _count_request(cls):
-        cls._request_count += 1
-
-    @classmethod
     def _regenrate_driver(cls):
         cls.driver.quit()
         cls.driver = cls._init_driver()
 
     @classmethod
     def inspect_request_count(cls):
+        cls._request_count += 1
+
         print(f"현재 {cls._request_count}번 요청되었습니다.")
-        
+
         # NOTE todo repair calcurating. self._request_count > MAX_REQUEST
         if cls._request_count >= MAX_REQUEST:
             print(

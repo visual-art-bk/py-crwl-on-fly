@@ -100,20 +100,26 @@ class WebScrpDriverManager:
         self._request_count += 1
         print(f"현재 {self._request_count}번 요청되었습니다.")
         self.driver.quit()
-    
+
     @classmethod
     def count_request(self):
         self._request_count += 1
 
     @classmethod
+    def _regenrate_driver(cls):
+
+        cls.driver.quit()
+
+        cls.__init__(cls)
+
+    @classmethod
     def inspect_request_count(self):
+        # NOTE todo repair calcurating. self._request_count > MAX_REQUEST
         if self._request_count > MAX_REQUEST:
             print(
                 f"드라이브 초기화 됩니다 -  총 {self._request_count} // Max {MAX_REQUEST}"
             )
-            self.driver.quit()
 
-            self.__init__(self)
+            self._regenrate_driver()
 
             self._request_count = 0  # 카운트 초기화
-

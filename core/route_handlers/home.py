@@ -1,9 +1,9 @@
-from core.utils.selenium_utils import CrawlingWebDriver
+from core.utils.WebScrpManager import WebScrpManager
 from core.exceptions.route_exceptions import RouteHandlerError
 
 def home_handler():
     try:
-        with CrawlingWebDriver() as manager:
+        with WebScrpManager() as manager:
             manager.driver.get("https://google.com")
 
             print(manager.driver.title)  

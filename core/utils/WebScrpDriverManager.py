@@ -13,8 +13,7 @@ from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementErr
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-MAX_REQUEST = 1
-
+MAX_REQUEST = 10
 
 class WebScrpDriverManager:
     driver: webdriver.Chrome = None
@@ -27,8 +26,11 @@ class WebScrpDriverManager:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._request_count += 1
-        print(f"현재 {self._request_count}번 요청되었습니다.")
+        self._count_request()
+
+       
+        
+        self.inspect_request_count()
         self.driver.quit()
 
     @classmethod
@@ -109,8 +111,8 @@ class WebScrpDriverManager:
             )
 
     @classmethod
-    def count_request(self):
-        self._request_count += 1
+    def _count_request(cls):
+        cls._request_count += 1
 
     @classmethod
     def _regenrate_driver(cls):
@@ -118,13 +120,15 @@ class WebScrpDriverManager:
         cls.driver = cls._init_driver()
 
     @classmethod
-    def inspect_request_count(self):
+    def inspect_request_count(cls):
+        print(f"현재 {cls._request_count}번 요청되었습니다.")
+        
         # NOTE todo repair calcurating. self._request_count > MAX_REQUEST
-        if self._request_count > MAX_REQUEST:
+        if cls._request_count >= MAX_REQUEST:
             print(
-                f"드라이브 초기화 됩니다 -  총 {self._request_count} // Max {MAX_REQUEST}"
+                f"드라이브 초기화 됩니다 -  총 {cls._request_count} // Max {MAX_REQUEST}"
             )
 
-            self._regenrate_driver()
+            cls._regenrate_driver()
 
-            self._request_count = 0  # 카운트 초기화
+            cls._request_count = 0  # 카운트 초기화

@@ -35,7 +35,7 @@ class WebScrpDriverManager:
         self.driver.quit()
 
     @classmethod
-    def _configure_options(cls):
+    def _configure_options(self):
         options = Options()
 
         # See ./.env
@@ -66,29 +66,29 @@ class WebScrpDriverManager:
         return options
 
     @classmethod
-    def _init_driver(cls):
+    def _init_driver(self):
 
-        if cls.driver:
-            cls._quit_driver()
+        if self.driver:
+            self._quit_driver()
 
         services = Service(GOOGLE_CHROME_DRIVER_PATH)
-        options = cls._configure_options()
+        options = self._configure_options()
 
-        cls.driver = webdriver.Chrome(service=services, options=options)
-        cls._configure_driver()
+        self.driver = webdriver.Chrome(service=services, options=options)
+        self._configure_driver()
 
-        return cls.driver
+        return self.driver
     
     @classmethod
-    def _quit_driver(cls):
-        if (cls.driver):
-            cls.driver.quit()
-            cls.driver = None
+    def _quit_driver(self):
+        if (self.driver):
+            self.driver.quit()
+            self.driver = None
             
     @classmethod
-    def _configure_driver(cls):
-        if cls.driver:
-            cls.driver.execute_cdp_cmd(
+    def _configure_driver(self):
+        if self.driver:
+            self.driver.execute_cdp_cmd(
                 "Network.setBlockedURLs",
                 {
                     "urls": [
@@ -107,7 +107,7 @@ class WebScrpDriverManager:
                     ]
                 },
             )
-            cls.driver.execute_script(
+            self.driver.execute_script(
                 """
                 var ads = document.querySelectorAll('.ad, .banner, .popup');
                 ads.forEach(ad => ad.remove());
@@ -115,9 +115,9 @@ class WebScrpDriverManager:
             )
 
     @classmethod
-    def _regenrate_driver(cls):
-        cls._quit_driver()
-        cls.driver = cls._init_driver()
+    def _regenrate_driver(self):
+        self._quit_driver()
+        self.driver = self._init_driver()
 
     @classmethod
     def inspect_request_count(cls):

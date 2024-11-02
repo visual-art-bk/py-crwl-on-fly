@@ -13,7 +13,7 @@ import config
 from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementError
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from core.utils.testers import timer_tester
+
 
 MAX_REQUEST = 10
 
@@ -36,36 +36,34 @@ class WebScrpDriverManager:
 
     @classmethod
     def _configure_options(cls):
-        cls.options = Options()
+        options = Options()
 
         # See ./.env
         if config.HEADLESS:
-            cls.options.add_argument("--headless")
+            options.add_argument("--headless")
         #
         #
         #
-        cls.options.add_argument(
+        options.add_argument(
             "--no-sandbox"
         )  # 샌드박스 비활성화 (리소스 제한 환경에서 필수)
-        cls.options.add_argument("--disable-dev-shm-usage")  # /dev/shm 공간 문제 해결
-        cls.options.add_argument("--disable-gpu")  # GPU 비활성화
-        cls.options.add_argument(
-            "--remote-debugging-port=9222"
-        )  # 원격 디버깅 포트 설정
-        cls.options.add_argument("--window-size=1920,1080")  # 기본 창 크기 설정
+        options.add_argument("--disable-dev-shm-usage")  # /dev/shm 공간 문제 해결
+        options.add_argument("--disable-gpu")  # GPU 비활성화
+        options.add_argument("--remote-debugging-port=9222")  # 원격 디버깅 포트 설정
+        options.add_argument("--window-size=1920,1080")  # 기본 창 크기 설정
 
         ### 최근에 추가된 옵션
-        cls.options.add_argument(
-            "--blink-settings=imagesEnabled=false"
-        )  # 이미지 비활성화
+        options.add_argument("--blink-settings=imagesEnabled=false")  # 이미지 비활성화
 
         # eager: DOM 콘텐츠가 로드되면 바로 작업을 시작하며, 이미지나 광고 등은 나중에 로드
-        cls.options.page_load_strategy = "eager"
+        options.page_load_strategy = "eager"
 
         # 속도가 빨라짐에 기여하는 듯함 데스트해봐야함
-        cls.options.add_argument(
+        options.add_argument(
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
         )
+
+        return options
 
     @classmethod
     def _init_driver(cls):
@@ -74,10 +72,9 @@ class WebScrpDriverManager:
             cls.driver.quit()
 
         services = Service(GOOGLE_CHROME_DRIVER_PATH)
-        cls.options = Options()
-        cls._configure_options()
+        options = cls._configure_options()
 
-        cls.driver = webdriver.Chrome(service=services, options=cls.options)
+        cls.driver = webdriver.Chrome(service=services, options=options)
         cls._configure_driver()
 
         return cls.driver

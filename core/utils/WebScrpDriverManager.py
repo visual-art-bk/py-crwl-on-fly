@@ -69,7 +69,7 @@ class WebScrpDriverManager:
     def _init_driver(cls):
 
         if cls.driver:
-            cls.driver.quit()
+            cls._quit_driver()
 
         services = Service(GOOGLE_CHROME_DRIVER_PATH)
         options = cls._configure_options()
@@ -78,7 +78,13 @@ class WebScrpDriverManager:
         cls._configure_driver()
 
         return cls.driver
-
+    
+    @classmethod
+    def _quit_driver(cls):
+        if (cls.driver):
+            cls.driver.quit()
+            cls.driver = None
+            
     @classmethod
     def _configure_driver(cls):
         if cls.driver:
@@ -110,7 +116,7 @@ class WebScrpDriverManager:
 
     @classmethod
     def _regenrate_driver(cls):
-        cls.driver.quit()
+        cls._quit_driver()
         cls.driver = cls._init_driver()
 
     @classmethod

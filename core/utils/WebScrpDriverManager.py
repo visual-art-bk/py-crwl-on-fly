@@ -30,7 +30,7 @@ class WebScrpDriverManager:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
 
-        self.inspect_request_count()
+        self._inspect_request_count()
 
         self.driver.quit()
 
@@ -120,7 +120,7 @@ class WebScrpDriverManager:
         self.driver = self._init_driver()
 
     @classmethod
-    def inspect_request_count(cls):
+    def _inspect_request_count(cls):
         cls._request_count += 1
 
         print(f"현재 {cls._request_count}번 요청되었습니다.")

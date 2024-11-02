@@ -20,7 +20,6 @@ def home():
 
 
 @main.route("/scr/nv-blog")
-@test_simulate_multiple_requests(request_count=11, delay=0.2)
 def _():
 
     try:

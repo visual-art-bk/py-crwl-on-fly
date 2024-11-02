@@ -25,8 +25,8 @@ def _():
 
     try:
         # with문이 종료되면 driver.quit() 실행되므로, 추가 콜 필요없음
-        with WebScrpDriverManager() as manager:
-            return handler_search_naver_blog(manager)
+        with WebScrpDriverManager.create_driver_manager() as driver_manager:
+            return handler_search_naver_blog(driver_manager)
 
     except Exception as e:
         raise RouteHandlerError(e)

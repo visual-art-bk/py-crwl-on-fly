@@ -35,6 +35,12 @@ class WebScrpDriverManager:
         self.driver.quit()
 
     @classmethod
+    def create_driver_manager(cls):
+
+        instance = cls()
+        return instance
+
+    @classmethod
     def _configure_options(self):
         options = Options()
 
@@ -78,13 +84,13 @@ class WebScrpDriverManager:
         self._configure_driver()
 
         return self.driver
-    
+
     @classmethod
     def _quit_driver(self):
-        if (self.driver):
+        if self.driver:
             self.driver.quit()
             self.driver = None
-            
+
     @classmethod
     def _configure_driver(self):
         if self.driver:

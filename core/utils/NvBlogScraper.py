@@ -1,5 +1,6 @@
 from core.utils.WebScarper import WebScarper
-
+import time
+import json  
 
 class NvBlogScraper(WebScarper):
     _iframe_hadler = None
@@ -18,34 +19,42 @@ class NvBlogScraper(WebScarper):
 
         main_tap.click()
 
-    def collect_post_links(self, links_size=10):
-        last_height = self._driver.execute_script("return document.body.scrollHeight")
-        collected_links = set()
+    def collect_post_links(self, links_size=100):
+        collected_links = set()  # 중복 제거를 위해 set 사용
+        scroll_attempt = 0  # 스크롤 시도 횟수
+        max_scrolls = int(links_size / 30)  # 최대 스크롤 시도 횟수
 
-        while len(collected_links) < links_size:
-            # 스크롤을 아래로 내림
+        while len(collected_links) < links_size and scroll_attempt < max_scrolls:
+            last_height = self._driver.execute_script(
+                "return document.body.scrollHeight"
+            )
+
+            # 스크롤을 페이지 끝까지 내림
             self._driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);"
             )
+            time.sleep(1.5)  # 페이지 로딩을 기다리기 위해 지연 시간 추가 (2초 권장)
 
-            # 새롭게 로드된 링크 수집
+            # 새 높이를 확인하여 비교
+            new_height = self._driver.execute_script(
+                "return document.body.scrollHeight"
+            )
+            if new_height == last_height:
+                print("페이지 끝에 도달했습니다. 더 이상 로드할 내용이 없습니다.")
+                break  # 페이지 끝에 도달하면 루프 탈출
 
-            post_links = self._find_elements_by_css(".titlㅐㅐㅐe_link", 0.5)
-
+            # 링크 수집
+            post_links = self._find_elements_by_css(".title_link")
             for link in post_links:
                 collected_links.add(link.get_attribute("href"))
+                if len(collected_links) >= links_size:
+                    break  # 목표 수만큼 수집되면 종료
 
-                # 스크롤 높이 업데이트
-                new_height = self._driver.execute_script(
-                    "return document.body.scrollHeight"
-                )
-                if new_height == last_height:
-                    break  # 더 이상 새로운 콘텐츠가 없을 때 탈출
-                last_height = new_height
+            scroll_attempt += 1  # 스크롤 횟수 증가
 
         print(f"수집된 링크 수: {len(collected_links)}")
-        # for link in collected_links:
-        #     print(link)
+        result = {"links": list(collected_links)}
+        return json.dumps(result, ensure_ascii=False)
 
     def test_render_html(self):
         return "<h1>대기중</h1>"

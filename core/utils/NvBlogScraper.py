@@ -1,6 +1,7 @@
 from core.utils.WebScarper import WebScarper
 import time
-import json  
+import json
+import inspect
 
 class NvBlogScraper(WebScarper):
     _iframe_hadler = None
@@ -55,6 +56,30 @@ class NvBlogScraper(WebScarper):
         print(f"수집된 링크 수: {len(collected_links)}")
         result = {"links": list(collected_links)}
         return json.dumps(result, ensure_ascii=False)
-
+    
+    def scrape_blog_infos(self):
+        current_function = inspect.currentframe().f_code.co_name
+        
+        has_iframe = self.check_iframe_presence()
+        
+        if has_iframe:
+            self.switch_to_iframe()
+            print(f"아이프레임 전환 {current_function}")
+            
+            self._scrape_nickname()
+            
+            self.switch_to_default_content()
+            
+    def _scrape_nickname(self):
+        try:
+        
+            nick = self.find_element_by_xpath('//span[@class="nick"]').text
+            print(f"닉네임 - {nick}")
+        except:
+            nick = "닉네임-결과없음"
+            print(f"닉네임 - {nick}")
+            
+        return nick
+            
     def test_render_html(self):
         return "<h1>대기중</h1>"

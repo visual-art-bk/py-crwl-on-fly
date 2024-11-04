@@ -91,7 +91,7 @@ class WebScarper(IFrameHandler):
     @classmethod
     def make_xpath(cls, keword):
         return f"//a[contains(text(),'{keword}')]"
-
+    
 
     def _find_elements_by_css(self, css, delay=0):
         try:

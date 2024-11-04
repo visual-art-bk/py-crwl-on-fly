@@ -1,6 +1,7 @@
 from core.utils.NvBlogScraper import NvBlogScraper
 from core.utils import WebScrpDriverManager
 from core.exceptions.scraping_exceptions import ErrorHandler
+import time
 
 
 def render_tmp_html():

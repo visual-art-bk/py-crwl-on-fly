@@ -13,6 +13,15 @@ import time
 from core.utils.decorate_testers import test_simulate_multiple_requests
 from core.utils.testers import request_tester, tester_request_searched_links
 import json
+import os
+from dotenv import load_dotenv
+
+# .env 파일 로드 (로컬 개발 환경에서만 필요)
+load_dotenv()
+
+# BASE_URL 환경 변수 읽기 (설정이 없으면 기본값으로 로컬 호스트 URL 사용)
+base_url = os.getenv("BASE_URL", "https://py-crwl-on-hero-6a1a5129f69c.herokuapp.com")
+
 
 main = Blueprint("main", __name__)
 
@@ -44,11 +53,13 @@ def _():
 def blog_scraping():
 
     try:
+        search_keyword = request.args.get("search_keyword", type=str, default='가을%20러닝')
+        keywords_size = request.args.get("keywords_size", type=int, default=10)
         start_index = request.args.get("start", type=int, default=0)
         end_index = request.args.get("end", type=int, default=5)
 
         searched_blog_post_links = tester_request_searched_links(
-            "http://127.0.0.1:5000/scr/nv-blog?search_keyword=가을%20러닝&keywords_size=200"
+            f"{base_url}/scr/nv-blog?search_keyword={search_keyword}&keywords_size={keywords_size}"
         )
 
         links = json.loads(searched_blog_post_links.text)["links"]

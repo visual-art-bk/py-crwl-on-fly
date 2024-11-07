@@ -19,10 +19,16 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# app 하위 디렉토리 생성
+RUN mkdir -p /app/logs
+
 # 환경 변수 설정
 # 이곳은 서버를 위한 변수설정이며, 로컬을 위한 설정은 .env에서 정의
 ENV GOOGLE_CHROME_DRIVER_PATH=/app/static/drivers/chromedriver/chromedriver
 ENV HEADLESS=True
+ENV LOG_PATH=/app/logs
+ENV BASE_URL=https://py-crwl-on-hero-6a1a5129f69c.herokuapp.com
+
 
 # Python 패키지 설치
 COPY requirements.txt .

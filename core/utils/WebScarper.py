@@ -9,10 +9,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from config import GOOGLE_CHROME_DRIVER_PATH
 import config
-from core.exceptions.route_exceptions import RouteHandlerError, NoSuchElementError
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from core.utils.IFrameHandler import IFrameHandler
 from core.exceptions.scraping_exceptions import ErrorHandler
 from core.utils.ElementFinder import ElementFinder
 
@@ -30,17 +28,16 @@ class WebScarper(ElementFinder):
         self.driver.maximize_window()
 
     def search_keyword(self, keyword):
-        
-        search_box=self.find_element(
+
+        search_box = self.find_element(
             by=By.CSS_SELECTOR,
             expression="input[name='query']",
-            element_description='검색창'
+            element_description="검색창",
         )
         if not search_box == None:
             search_box.send_keys(keyword)
             search_box.submit()
             return
-
 
     @classmethod
     def render_test_html(self):
@@ -50,7 +47,6 @@ class WebScarper(ElementFinder):
         formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
 
         return f"<h1>스크랩 성공 - 현재: {formatted_now}</h1>"
-
 
     @classmethod
     def make_xpath(cls, keword):

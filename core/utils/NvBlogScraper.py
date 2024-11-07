@@ -15,23 +15,6 @@ import logging
 from datetime import datetime
 from core.utils.loggers import element_find_logger as e_finder_logger
 
-now = datetime.now()
-log_time = now.strftime("%Y-%m-%d %H:%M:%S")
-
-logging.basicConfig(
-    level=logging.DEBUG,  # 로그 레벨 설정 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(),  # 콘솔에 로그 출력
-        logging.FileHandler(
-            f"__logs__/NvBlogScraper-{log_time}.log"
-        ),  # 파일에 로그 출력
-    ],
-)
-
-logger = logging.getLogger(__name__)
-
-
 class NvBlogScraper(WebScarper):
 
     def __init__(self, driver, timeout):
@@ -198,8 +181,6 @@ class NvBlogScraper(WebScarper):
             nick = element.text
 
             return nick
-
-        logger.critical(msg=f"닉네임을 찾지 못했음 link - {scrape_link}")
 
         strategies = [
             {"by": By.XPATH, "expression": "//p[@class='nick']"},

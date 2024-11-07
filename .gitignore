@@ -7,3 +7,5 @@ build_push_webhook.sh
 __pycache__/
 
 *.pyc
+
+__logs__

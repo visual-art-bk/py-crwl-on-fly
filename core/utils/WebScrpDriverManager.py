@@ -33,6 +33,8 @@ class WebScrpDriverManager:
         self._inspect_request_count()
 
         self.driver.quit()
+        self.driver = None
+        self._init_request_count()
 
     @classmethod
     def create_driver_manager(cls):
@@ -75,9 +77,12 @@ class WebScrpDriverManager:
         # options.add_argument(
         #     "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.121 Safari/537.36"
         # )
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.140 Safari/537.36")
-        options.add_argument("--disable-blink-features=AutomationControlled")  # 자동화 탐지를 피하는 옵션
-
+        options.add_argument(
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.140 Safari/537.36"
+        )
+        options.add_argument(
+            "--disable-blink-features=AutomationControlled"
+        )  # 자동화 탐지를 피하는 옵션
 
         return options
 
@@ -134,6 +139,10 @@ class WebScrpDriverManager:
     def _regenrate_driver(self):
         self._quit_driver()
         self.driver = self._init_driver()
+        
+    @classmethod
+    def _init_request_count(cls):
+        cls._request_count = 0
 
     @classmethod
     def _inspect_request_count(cls):
@@ -149,4 +158,4 @@ class WebScrpDriverManager:
 
             cls._regenrate_driver()
 
-            cls._request_count = 0  # 카운트 초기화
+            cls._init_request_count()

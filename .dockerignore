@@ -4,3 +4,14 @@
 **/build_push_webhook.sh
 
 fly.toml
+
+__logs__
+
+*.log
+
+.env
+
+.git
+
+
+.vscode/

@@ -5,68 +5,75 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 import time
+import logging
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.DEBUG,  # 로그 레벨 설정 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        # logging.StreamHandler(),  # 콘솔에 로그 출력
+        logging.FileHandler("__logs__/iframe_switch.log"),  # 파일에 로그 출력
+    ],
+)
+
+logger = logging.getLogger(__name__)
 
 
 class IFrameHandler:
-    def __init__(self, driver):
+    def __init__(self, driver: webdriver.Chrome):
         self._driver: webdriver.Chrome = driver
+        self._iframe = None
 
     def check_iframe_presence(self):
         try:
             iframes = self._driver.find_elements(By.TAG_NAME, "iframe")
-            return len(iframes) > 0
+            for ifrm in iframes:
+                if self._driver.find_elements(By.TAG_NAME, "body"):
+                    self._iframe = ifrm
+                    
+            return self._iframe != None
         except NoSuchElementException:
             return False
-
-    def switch_to_iframe(self, iframe_index=0):
-        iframe = self._driver.find_element(By.TAG_NAME, "iframe")
-        self._driver.switch_to.frame(iframe)
-        print('아이프레임으로 전환되었습니다.')
-        
-    def switch_to_default_content(self):
-        self._driver.switch_to.default_content()
-        print("Switched back to default content.")
-
-    def scrape_content_from_iframe(self, iframe_index=0, element_xpath="//body"):
+       
+    def switch_to_iframe(self):
         try:
-            self._switch_to_iframe(iframe_index)
-            element = WebDriverWait(self._driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, element_xpath))
-            )
-            content = element.text
-            print(
-                f"Scraped content: {content[:100]}..."
-            )  # 출력 내용은 100자까지만 미리보기
-            return 
-        except TimeoutException:
-            print("Element not found in the iframe.")
-            return ""
+            if not self._iframe:
+                raise ValueError("전환될 아이프레임이 존재하지 않습니다.")
+
+            # 아이프레임 전환 시도
+            self._driver.switch_to.frame(self._iframe)
+            logger.info("아이프레임으로 전환되었습니다.")
+
+        except ValueError as e:
+            # 아이프레임이 없을 경우의 에러 로그 기록
+            logger.error(f"에러: {e}")
+
+        except Exception as e:
+            # 일반적인 예외 처리 추가 (예: WebDriver의 예외 처리)
+            logger.exception(f"예상치 못한 오류 발생: {e}")
+
         finally:
-            self._switch_to_default_content()
+            # 로그 출력 또는 기타 후속 작업을 여기에 추가 가능
+            logger.debug("아이프레임 전환 시도 완료.")
 
+    def switch_to_default_content(self):
+        try:
+            if not self._iframe:
+                raise ValueError("복귀할 아이프레임이 존재하지 않습니다.")
 
-# # 예제 코드 실행 부분
-# if __name__ == "__main__":
-#     # ChromeDriver 경로 지정
-#     service = Service(executable_path="/path/to/chromedriver")
-#     _driver = webdriver.Chrome(service=service)
+            # 아이프레임 전환 시도
+            self._driver.switch_to.default_content()
+            logger.info("아이프레임을 나왔습니다.")
 
-#     try:
-#         _driver.get("https://example.com")  # 원하는 URL로 변경
-#         time.sleep(2)  # 페이지 로딩 대기
+        except ValueError as e:
+            # 아이프레임이 없을 경우의 에러 로그 기록
+            logger.error(f"에러: {e}")
 
-#         iframe_handler = IFrameHandler(_driver)
+        except Exception as e:
+            # 일반적인 예외 처리 추가 (예: WebDriver의 예외 처리)
+            logger.exception(f"예상치 못한 오류 발생: {e}")
 
-#         # iframe이 있는지 확인
-#         has_iframe = iframe_handler.check_iframe_presence()
-#         print(f"Is there an iframe on the page? {'Yes' if has_iframe else 'No'}")
-
-#         # iframe이 있으면 첫 번째 iframe에서 스크래핑 실행
-#         if has_iframe:
-#             content = iframe_handler.scrape_content_from_iframe(
-#                 iframe_index=0, element_xpath="//h1"
-#             )
-#             print("Scraped content from iframe:", content)
-
-#     finally:
-#         _driver.quit()
+        finally:
+            # 로그 출력 또는 기타 후속 작업을 여기에 추가 가능
+            logger.debug("아이프레임 복귀 시도 완료.")

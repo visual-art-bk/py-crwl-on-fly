@@ -15,6 +15,7 @@ import logging
 from datetime import datetime
 from core.utils.loggers import element_find_logger as e_finder_logger
 
+
 class NvBlogScraper(WebScarper):
 
     def __init__(self, driver, timeout):
@@ -109,6 +110,11 @@ class NvBlogScraper(WebScarper):
                 href = link_info["href"]
                 title = link_info["title"]
 
+                # #  추후 아래의 post 포함하는 페이지 완전히 고쳐야만 함.
+                if href.startswith("https://post.naver.com/"):
+                    e_finder_logger.debug(f"https://post.naver.com 도메인은 스크래핑 건너뜁니다. - {href}")
+                    continue
+
                 driver_manager.driver.get(href)
 
                 iframe = elem_finder.find_element(
@@ -117,25 +123,18 @@ class NvBlogScraper(WebScarper):
                     element_description=f"아이프레임 in {href}",
                 )
 
-                if iframe == None:
+                if not iframe == None:
+
+                    # 아이프레임 진입
+                    driver_manager.driver.switch_to.frame(iframe)
 
                     infos = self.scrape_blog_infos(
                         element_finder=elem_finder, blog_link=href, link_title=title
                     )
 
+                    driver_manager.driver.switch_to.default_content()
+
                     blogs_infos.append(infos)
-                    continue
-
-                # 아이프레임 진입
-                driver_manager.driver.switch_to.frame(iframe)
-
-                infos = self.scrape_blog_infos(
-                    element_finder=elem_finder, blog_link=href, link_title=title
-                )
-
-                driver_manager.driver.switch_to.default_content()
-
-                blogs_infos.append(infos)
 
         return blogs_infos
 

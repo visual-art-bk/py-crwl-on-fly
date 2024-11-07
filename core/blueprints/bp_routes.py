@@ -51,38 +51,28 @@ def _():
 
 @main.route("/scr/nv-blog/scraping")
 def blog_scraping():
+
     try:
         search_keyword = request.args.get("search_keyword", type=str, default='가을%20러닝')
         keywords_size = request.args.get("keywords_size", type=int, default=10)
         start_index = request.args.get("start", type=int, default=0)
         end_index = request.args.get("end", type=int, default=5)
 
-        # 링크 요청
         searched_blog_post_links = tester_request_searched_links(
             f"{base_url}/scr/nv-blog?search_keyword={search_keyword}&keywords_size={keywords_size}"
         )
 
-        # 응답 상태 코드와 텍스트 확인
-        if searched_blog_post_links.status_code != 200:
-            raise RouteHandlerError(f"Failed to fetch links, status code: {searched_blog_post_links.status_code}")
+        links = json.loads(searched_blog_post_links.text)["links"]
 
-        # JSON 파싱 예외 처리
-        try:
-            links = json.loads(searched_blog_post_links.text).get("links", [])
-        except json.JSONDecodeError:
-            raise RouteHandlerError("Invalid JSON response received from the server.")
-
-        # 링크 길이에 따라 start_index 및 end_index 조정
-        links_len = len(links)
+        links_len = links.__len__()
         if start_index >= links_len:
             start_index = 0
-        if end_index > links_len:
+        if end_index >= links_len:
             end_index = links_len
 
-        # 스크래핑할 링크들 설정
         links_to_scrape = links[start_index:end_index]
 
-        # 웹 드라이버를 사용하여 스크래핑 수행
+        # with문이 종료되면 driver.quit() 실행되므로, 추가 콜 필요없음
         with WebScrpDriverManager.create_driver_manager() as driver_manager:
             return handle_scraping_blog_infos(driver_manager, links_to_scrape)
 

@@ -76,3 +76,7 @@ def blog_scraping():
 
     except Exception as e:
         raise RouteHandlerError(e)
+
+@main.route("/test")
+def test():
+    return '<h1>테스트 페이지입니다.</h1>'

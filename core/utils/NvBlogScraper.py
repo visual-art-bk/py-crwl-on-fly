@@ -1,17 +1,11 @@
+from urllib.parse import urlparse
 from core.utils.WebScarper import WebScarper
 from core.utils.WebScrpDriverManager import WebScrpDriverManager
-from core.exceptions.scraping_exceptions import ErrorHandler
 import time
 import json
-import inspect
-from urllib.parse import urlparse, parse_qs
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from core.utils.ElementFinder import ElementFinder
-from core.utils.iframe_handlers import switch_to_frame
-import logging
+
 from datetime import datetime
 from core.utils.loggers import element_find_logger as e_finder_logger
 
@@ -74,7 +68,15 @@ class NvBlogScraper(WebScarper):
                 return json.dumps(scraped_links, ensure_ascii=False)
 
             for link in post_links:
-                link_info = {"href": link.get_attribute("href"), "title": link.text}
+                href = link.get_attribute("href")
+                
+                # # #  추후 아래의 post 포함하는 페이지 완전히 고쳐야만 함.
+                if self._hasPostUrls(href=href, message='각각의링크수집'):
+                    continue
+                
+                title = link.text
+
+                link_info = {"href": href, "title": title}
 
                 collected_links.append(link_info)
 
@@ -110,11 +112,9 @@ class NvBlogScraper(WebScarper):
                 href = link_info["href"]
                 title = link_info["title"]
 
-                # #  추후 아래의 post 포함하는 페이지 완전히 고쳐야만 함.
-                if href.startswith("https://post.naver.com/"):
-                    e_finder_logger.debug(f"https://post.naver.com 도메인은 스크래핑 건너뜁니다. - {href}")
-                    continue
-
+               
+              
+                
                 driver_manager.driver.get(href)
 
                 iframe = elem_finder.find_element(
@@ -223,3 +223,12 @@ class NvBlogScraper(WebScarper):
             return int(count)
 
         return count
+
+    def _hasPostUrls(self, href, message="스크래핑-단계"):
+        # #  추후 아래의 post 포함하는 페이지 완전히 고쳐야만 함.
+        if href.startswith("https://post.naver.com/"):
+            e_finder_logger.debug(
+                f"{message} - https://post.naver.com 도메인은 스크래핑 건너뜁니다. - {href}"
+            )
+            return True
+        return False

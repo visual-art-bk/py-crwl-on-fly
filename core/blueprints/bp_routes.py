@@ -9,8 +9,6 @@ from core.route_handlers.scr_nv_blog import (
 )
 from core.route_handlers.scraping import handle_scraping_blog_infos
 from core.exceptions.route_exceptions import RouteHandlerError
-import time
-from core.utils.decorate_testers import test_simulate_multiple_requests
 from core.utils.testers import request_tester, tester_request_searched_links
 import json
 import os

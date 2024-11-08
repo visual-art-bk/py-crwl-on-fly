@@ -155,8 +155,8 @@ class NvBlogScraper(WebScarper):
         )
 
         infos["nickname"] = nick
-        infos["blog_id"] = blog_id
-        infos["email"] = email
+        # infos["blog_id"] = blog_id
+        # infos["email"] = email
         infos["visitors_count"] = visitors_count
         infos["link"] = blog_link
         infos["blog_post_title"] = link_title

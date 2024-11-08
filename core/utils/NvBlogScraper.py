@@ -154,12 +154,12 @@ class NvBlogScraper(WebScarper):
             blog_id=blog_id, element_finder=element_finder
         )
 
-        infos["nickname"] = nick
+        infos["nick"] = nick
         # infos["blog_id"] = blog_id
         # infos["email"] = email
-        infos["visitors_count"] = visitors_count
+        infos["visitors"] = visitors_count
         infos["link"] = blog_link
-        infos["blog_post_title"] = link_title
+        infos["title"] = link_title
 
         return infos
 

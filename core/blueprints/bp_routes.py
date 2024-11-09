@@ -1,4 +1,6 @@
 import requests
+import time
+from core.utils.loggers import element_find_logger
 from flask import Blueprint, request
 from core.utils.WebScrpDriverManager import WebScrpDriverManager
 from core.route_handlers.home import home_handler
@@ -55,14 +57,38 @@ def blog_scraping():
         keywords_size = request.args.get("keywords_size", type=int, default=10)
         start_index = request.args.get("start", type=int, default=0)
         end_index = request.args.get("end", type=int, default=5)
+        
+        max_retries = 5  # 최대 재시도 횟수
+        retry_count = 0  # 현재 재시도 횟수
+        delay_between_retries = 1  # 각 재시도 사이의 대기 시간 (초)
+        
+        # 지속적으로 JSON 응답이 올 때까지 요청을 반복
+        while retry_count < max_retries:
+            try:
+                searched_blog_post_links = tester_request_searched_links(
+                    f"{base_url}/scr/nv-blog?search_keyword={search_keyword}&keywords_size={keywords_size}"
+                )
 
-        searched_blog_post_links = tester_request_searched_links(
-            f"{base_url}/scr/nv-blog?search_keyword={search_keyword}&keywords_size={keywords_size}"
-        )
+                # JSON 파싱 시도
+                links = json.loads(searched_blog_post_links.text)["links"]
+                
+                # 파싱 성공 시 루프 탈출
+                break
 
-        links = json.loads(searched_blog_post_links.text)["links"]
+            except json.JSONDecodeError as e:
+                print(f"JSONDecodeError 발생: {e} - 재시도 중 ({retry_count + 1}/{max_retries})")
+                retry_count += 1
+                time.sleep(delay_between_retries)  # 재시도 전 대기 시간
 
-        links_len = links.__len__()
+            except Exception as e:
+                raise RouteHandlerError(f"예상치 못한 오류: {e}")
+
+        # 최대 재시도 횟수 초과 시 예외 발생
+        if retry_count == max_retries:
+            raise RouteHandlerError("JSON 데이터를 파싱할 수 없습니다. 최대 재시도 횟수를 초과했습니다.")
+
+        # 링크 슬라이싱 및 스크래핑 시작
+        links_len = len(links)
         if start_index >= links_len:
             start_index = 0
         if end_index >= links_len:
@@ -76,7 +102,6 @@ def blog_scraping():
 
     except Exception as e:
         raise RouteHandlerError(e)
-
 @main.route("/test")
 def test():
     return '<h1>테스트 페이지입니다.</h1>'

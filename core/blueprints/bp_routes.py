@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # BASE_URL 환경 변수 읽기 (설정이 없으면 기본값으로 로컬 호스트 URL 사용)
-base_url = os.getenv("BASE_URL", "https://py-crwl-on-hero-6a1a5129f69c.herokuapp.com")
+base_url = os.getenv("BASE_URL", "https://rchr-micro-ws-7090524482ab.herokuapp.com")
 
 
 main = Blueprint("main", __name__)

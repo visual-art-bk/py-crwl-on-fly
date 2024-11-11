@@ -27,7 +27,7 @@ RUN mkdir -p /app/logs
 ENV GOOGLE_CHROME_DRIVER_PATH=/app/static/drivers/chromedriver/chromedriver
 ENV HEADLESS=True
 ENV LOG_PATH=/app/logs
-ENV BASE_URL=https://rchr-micro-ws-7090524482ab.herokuapp.com/
+ENV BASE_URL=https://rchr-micro-ws-550275907507.asia-northeast3.run.app/
 
 # Python 패키지 설치
 COPY requirements.txt .

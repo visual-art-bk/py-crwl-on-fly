@@ -9,3 +9,7 @@ __pycache__/
 *.pyc
 
 __logs__
+
+__scripts__/
+
+gcp_docker.sh

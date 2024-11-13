@@ -16,6 +16,7 @@ import json
 import os
 from dotenv import load_dotenv
 from core.utils.ScraperAPI import ScraperAPI
+from __test__.TempSS25ScraperAPI import TempSS25ScraperAPI
 
 # .env 파일 로드 (로컬 개발 환경에서만 필요)
 load_dotenv()
@@ -30,6 +31,7 @@ main = Blueprint("main", __name__)
 @main.route("/")
 def home():
     return ScraperAPI.index()
+
 
 @main.route("/scr/nv-blog", methods=["GET"])
 def _():
@@ -53,15 +55,17 @@ def _():
 def blog_scraping():
 
     try:
-        search_keyword = request.args.get("search_keyword", type=str, default='가을%20러닝')
+        search_keyword = request.args.get(
+            "search_keyword", type=str, default="가을%20러닝"
+        )
         keywords_size = request.args.get("keywords_size", type=int, default=10)
         start_index = request.args.get("start", type=int, default=0)
         end_index = request.args.get("end", type=int, default=5)
-        
+
         max_retries = 5  # 최대 재시도 횟수
         retry_count = 0  # 현재 재시도 횟수
         delay_between_retries = 1  # 각 재시도 사이의 대기 시간 (초)
-        
+
         # 지속적으로 JSON 응답이 올 때까지 요청을 반복
         while retry_count < max_retries:
             try:
@@ -71,12 +75,14 @@ def blog_scraping():
 
                 # JSON 파싱 시도
                 links = json.loads(searched_blog_post_links.text)["links"]
-                
+
                 # 파싱 성공 시 루프 탈출
                 break
 
             except json.JSONDecodeError as e:
-                print(f"JSONDecodeError 발생: {e} - 재시도 중 ({retry_count + 1}/{max_retries})")
+                print(
+                    f"JSONDecodeError 발생: {e} - 재시도 중 ({retry_count + 1}/{max_retries})"
+                )
                 retry_count += 1
                 time.sleep(delay_between_retries)  # 재시도 전 대기 시간
 
@@ -85,7 +91,9 @@ def blog_scraping():
 
         # 최대 재시도 횟수 초과 시 예외 발생
         if retry_count == max_retries:
-            raise RouteHandlerError("JSON 데이터를 파싱할 수 없습니다. 최대 재시도 횟수를 초과했습니다.")
+            raise RouteHandlerError(
+                "JSON 데이터를 파싱할 수 없습니다. 최대 재시도 횟수를 초과했습니다."
+            )
 
         # 링크 슬라이싱 및 스크래핑 시작
         links_len = len(links)
@@ -102,6 +110,8 @@ def blog_scraping():
 
     except Exception as e:
         raise RouteHandlerError(e)
+
+
 @main.route("/test")
 def test():
-    return '<h1>테스트 페이지입니다. 20241111</h1>'
+    return "<h1>테스트 페이지입니다. 20241111</h1>"

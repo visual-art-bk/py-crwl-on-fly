@@ -4,12 +4,10 @@ build_push_webhook.sh
 
 .vscode
 
-__pycache__/
+__pycache__
 
 *.pyc
 
 __logs__
 
-__scripts__/
-
-gcp_docker.sh
+__test__

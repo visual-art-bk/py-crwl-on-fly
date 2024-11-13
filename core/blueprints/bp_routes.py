@@ -15,6 +15,7 @@ from core.utils.testers import request_tester, tester_request_searched_links
 import json
 import os
 from dotenv import load_dotenv
+from core.utils.ScraperAPI import ScraperAPI
 
 # .env 파일 로드 (로컬 개발 환경에서만 필요)
 load_dotenv()
@@ -28,8 +29,7 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def home():
-    return home_handler()
-
+    return ScraperAPI.index()
 
 @main.route("/scr/nv-blog", methods=["GET"])
 def _():
